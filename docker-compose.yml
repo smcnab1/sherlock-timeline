@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: sherlock_demo
+      POSTGRES_USER: sherlock
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run the local setup first}
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sherlock -d sherlock_demo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - sherlock-postgres:/var/lib/postgresql/data
+
+  sherlock:
+    build: .
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      DATABASE_URL: postgresql://sherlock:${POSTGRES_PASSWORD}@postgres:5432/sherlock_demo
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./.env:/app/.env:ro
+      - sherlock-uploads:/app/uploads
+      - sherlock-backups:/app/backups
+
+volumes:
+  sherlock-postgres:
+  sherlock-uploads:
+  sherlock-backups:

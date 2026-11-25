@@ -1,0 +1,387 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Case {
+  id            String         @id @default(cuid())
+  title         String
+  description   String
+  status        String         @default("active")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  events        Event[]
+  documents     Document[]
+  actions       Action[]
+  importJobs    ImportJob[]
+  conversations Conversation[]
+  auditTrail    AuditEntry[]
+  backups       Backup[]
+  tags          Tag[]
+}
+
+model Event {
+  id               String          @id @default(cuid())
+  caseId           String
+  title            String
+  description      String
+  notes            String          @default("")
+  eventType        String
+  category         String
+  importance       String          @default("medium")
+  status           String          @default("open")
+  confidenceScore  Int             @default(100)
+  machineGenerated Boolean         @default(false)
+  importJobId      String?
+  conversationId   String?
+  sourceMessageId  String          @default("")
+  startDate        DateTime
+  endDate          DateTime?
+  createdAt        DateTime        @default(now())
+  deletedAt        DateTime?
+  case             Case            @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  importJob        ImportJob?      @relation(fields: [importJobId], references: [id], onDelete: SetNull)
+  conversation     Conversation?   @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  people           EventPerson[]
+  documents        EventDocument[]
+  tags             EventTag[]
+  actions          Action[]
+  outgoing         Relationship[]  @relation("sourceEvent")
+  incoming         Relationship[]  @relation("targetEvent")
+
+  @@index([caseId, startDate])
+  @@index([conversationId])
+  @@index([importJobId])
+  @@index([sourceMessageId])
+}
+
+model Person {
+  id                       String                    @id @default(cuid())
+  name                     String
+  email                    String?
+  role                     String
+  organisation             String
+  notes                    String
+  firstCommunicationAt     DateTime?
+  lastCommunicationAt      DateTime?
+  interactionCount         Int                       @default(0)
+  deletedAt                DateTime?
+  events                   EventPerson[]
+  evidence                 EvidencePerson[]
+  actions                  Action[]                  @relation("ActionOwner")
+  outgoing                 PersonRelationship[]      @relation("sourcePerson")
+  incoming                 PersonRelationship[]      @relation("targetPerson")
+  sentMessages             ConversationMessage[]     @relation("messageSender")
+  conversationParticipants ConversationParticipant[]
+
+  @@index([email])
+  @@index([name])
+}
+
+model Document {
+  id                    String               @id @default(cuid())
+  caseId                String?
+  title                 String               @default("")
+  filename              String
+  description           String
+  sourceType            String               @default("Other")
+  sourceReference       String               @default("")
+  confidenceLevel       String               @default("Documented")
+  confidenceScore       Int                  @default(100)
+  originalContent       String               @default("")
+  extractedMetadata     Json?
+  contentHash           String               @default("")
+  importJobId           String?
+  conversationMessageId String?
+  path                  String
+  filePath              String               @default("")
+  fileSize              Int                  @default(0)
+  mimeType              String               @default("application/octet-stream")
+  uploadedAt            DateTime             @default(now())
+  deletedAt             DateTime?
+  case                  Case?                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  importJob             ImportJob?           @relation(fields: [importJobId], references: [id], onDelete: SetNull)
+  conversationMessage   ConversationMessage? @relation(fields: [conversationMessageId], references: [id], onDelete: SetNull)
+  events                EventDocument[]
+  people                EvidencePerson[]
+  tags                  DocumentTag[]
+  actions               Action[]
+
+  @@index([caseId, uploadedAt])
+  @@index([importJobId])
+  @@index([contentHash])
+  @@index([conversationMessageId])
+}
+
+model Tag {
+  id             String        @id @default(cuid())
+  caseId         String
+  name           String
+  normalizedName String
+  colour         String
+  case           Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  events         EventTag[]
+  documents      DocumentTag[]
+
+  @@unique([caseId, normalizedName])
+  @@index([caseId, name])
+}
+
+model Relationship {
+  id               String     @id @default(cuid())
+  sourceId         String
+  targetId         String
+  relationshipType String
+  importJobId      String?
+  confidenceScore  Int        @default(100)
+  machineGenerated Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  source           Event      @relation("sourceEvent", fields: [sourceId], references: [id], onDelete: Cascade)
+  target           Event      @relation("targetEvent", fields: [targetId], references: [id], onDelete: Cascade)
+  importJob        ImportJob? @relation(fields: [importJobId], references: [id], onDelete: SetNull)
+
+  @@unique([sourceId, targetId, relationshipType])
+  @@index([importJobId])
+}
+
+model PersonRelationship {
+  id               String     @id @default(cuid())
+  sourceId         String
+  targetId         String
+  relationshipType String
+  notes            String     @default("")
+  importJobId      String?
+  confidenceScore  Int        @default(100)
+  machineGenerated Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  source           Person     @relation("sourcePerson", fields: [sourceId], references: [id], onDelete: Cascade)
+  target           Person     @relation("targetPerson", fields: [targetId], references: [id], onDelete: Cascade)
+  importJob        ImportJob? @relation(fields: [importJobId], references: [id], onDelete: SetNull)
+
+  @@unique([sourceId, targetId, relationshipType])
+  @@index([importJobId])
+}
+
+model ImportJob {
+  id                  String                @id @default(cuid())
+  caseId              String
+  status              String                @default("draft")
+  sourceType          String
+  fileCount           Int                   @default(0)
+  messageCount        Int                   @default(0)
+  conversationCount   Int                   @default(0)
+  evidenceCount       Int                   @default(0)
+  eventCount          Int                   @default(0)
+  peopleCount         Int                   @default(0)
+  duplicateCount      Int                   @default(0)
+  analytics           Json?
+  insights            Json?
+  createdAt           DateTime              @default(now())
+  approvedAt          DateTime?
+  case                Case                  @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  results             ImportResult[]
+  conversations       Conversation[]
+  messages            ConversationMessage[]
+  documents           Document[]
+  events              Event[]
+  relationships       Relationship[]
+  personRelationships PersonRelationship[]
+
+  @@index([caseId, createdAt])
+  @@index([status])
+}
+
+model ImportResult {
+  id              String    @id @default(cuid())
+  importJobId     String
+  kind            String
+  status          String    @default("suggested")
+  summary         String
+  payload         Json
+  createdRecordId String?
+  createdAt       DateTime  @default(now())
+  importJob       ImportJob @relation(fields: [importJobId], references: [id], onDelete: Cascade)
+
+  @@index([importJobId, kind])
+  @@index([status])
+}
+
+model Conversation {
+  id                   String                    @id @default(cuid())
+  caseId               String
+  importJobId          String?
+  title                String
+  normalizedSubject    String
+  status               String                    @default("active")
+  startedAt            DateTime
+  endedAt              DateTime
+  messageCount         Int                       @default(0)
+  participantCount     Int                       @default(0)
+  averageResponseHours Int                       @default(0)
+  longestResponseHours Int                       @default(0)
+  followUpsRequired    Int                       @default(0)
+  escalations          Int                       @default(0)
+  periodsOfSilence     Int                       @default(0)
+  machineInsights      Json?
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+  case                 Case                      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  importJob            ImportJob?                @relation(fields: [importJobId], references: [id], onDelete: SetNull)
+  messages             ConversationMessage[]
+  participants         ConversationParticipant[]
+  events               Event[]
+
+  @@index([caseId, startedAt])
+  @@index([importJobId])
+  @@index([normalizedSubject])
+}
+
+model ConversationMessage {
+  id              String       @id @default(cuid())
+  conversationId  String
+  importJobId     String?
+  caseId          String
+  messageId       String
+  inReplyTo       String       @default("")
+  references      String[]
+  subject         String
+  sentAt          DateTime
+  senderId        String?
+  senderEmail     String
+  senderName      String
+  recipients      Json
+  cc              Json?
+  bcc             Json?
+  bodyText        String
+  bodyPreview     String
+  sourceFile      String
+  sourceHash      String
+  threadKey       String
+  classification  Json
+  confidenceScore Int          @default(80)
+  eventId         String?
+  evidenceId      String?
+  createdAt       DateTime     @default(now())
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  importJob       ImportJob?   @relation(fields: [importJobId], references: [id], onDelete: SetNull)
+  sender          Person?      @relation("messageSender", fields: [senderId], references: [id], onDelete: SetNull)
+  documents       Document[]
+
+  @@unique([caseId, sourceHash])
+  @@index([caseId, sentAt])
+  @@index([messageId])
+  @@index([conversationId])
+  @@index([importJobId])
+}
+
+model ConversationParticipant {
+  conversationId String
+  personId       String
+  role           String       @default("Participant")
+  messageCount   Int          @default(0)
+  firstMessageAt DateTime?
+  lastMessageAt  DateTime?
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  person         Person       @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, personId])
+}
+
+model EventPerson {
+  eventId  String
+  personId String
+  role     String @default("involved")
+  event    Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, personId])
+}
+
+model EventDocument {
+  eventId    String
+  documentId String
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, documentId])
+}
+
+model EvidencePerson {
+  documentId String
+  personId   String
+  role       String   @default("Witness")
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  person     Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([documentId, personId])
+}
+
+model Action {
+  id          String    @id @default(cuid())
+  caseId      String
+  title       String
+  description String
+  ownerId     String?
+  dueDate     DateTime
+  status      String    @default("Open")
+  eventId     String?
+  documentId  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  case        Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  owner       Person?   @relation("ActionOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  event       Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  evidence    Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@index([caseId, dueDate])
+  @@index([status])
+}
+
+model AuditEntry {
+  id         String   @id @default(cuid())
+  caseId     String
+  entityType String
+  entityId   String
+  action     String
+  summary    String
+  createdAt  DateTime @default(now())
+  case       Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, createdAt])
+}
+
+model Backup {
+  id        String   @id @default(cuid())
+  caseId    String
+  path      String
+  createdAt DateTime @default(now())
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, createdAt])
+}
+
+model EventTag {
+  eventId String
+  tagId   String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, tagId])
+  @@index([tagId])
+}
+
+model DocumentTag {
+  documentId String
+  tagId      String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([documentId, tagId])
+  @@index([tagId])
+}

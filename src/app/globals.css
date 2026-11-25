@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+:root {
+  --background: #020617;
+  --foreground: #e2e8f0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.react-flow__attribution {
+  background: transparent !important;
+  color: #64748b !important;
+}
+
+.react-flow {
+  --xy-node-background-color-default: #0f172a;
+  --xy-node-color-default: #e2e8f0;
+  --xy-node-border-default: 1px solid #334155;
+  --xy-handle-background-color-default: #0f172a;
+  --xy-handle-border-color-default: #94a3b8;
+  --xy-edge-stroke-default: #22d3ee;
+}
+
+.react-flow__handle {
+  width: 9px;
+  height: 9px;
+  border: 2px solid #94a3b8;
+  background: #020617;
+}
+
+.react-flow__edge-path {
+  filter: drop-shadow(0 0 5px rgba(34, 211, 238, 0.18));
+}
+
+.react-flow__edge-textbg {
+  fill: #0f172a;
+  stroke: #334155;
+}
+
+.react-flow__edge-text {
+  fill: #dbeafe;
+  font-weight: 700;
+}
+
+.react-flow__controls button,
+.react-flow__minimap {
+  border-color: #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+}

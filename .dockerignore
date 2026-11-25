@@ -1,0 +1,12 @@
+.git
+.env*
+.vercel
+.next
+node_modules
+backups
+uploads
+private
+coverage
+*.log
+*.tsbuildinfo
+.DS_Store

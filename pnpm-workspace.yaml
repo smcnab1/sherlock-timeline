@@ -1,0 +1,11 @@
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  esbuild: true
+  prisma: true
+  sharp: false
+  unrs-resolver: false
+
+overrides:
+  '@vercel/cli-config>zod': 4.6.7
+  'vite@>=7 <7.3.7': 7.3.8

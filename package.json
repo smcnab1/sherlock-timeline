@@ -1,0 +1,60 @@
+{
+  "name": "sherlock",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "diagnose:evidence": "tsx scripts/diagnose-evidence-storage.ts",
+    "prisma": "prisma",
+    "seed": "tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "@vercel/blob": "^2.9.0",
+    "@xyflow/react": "^12.12.1",
+    "bcryptjs": "^3.0.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
+    "framer-motion": "^12.43.0",
+    "geist": "^1.9.2",
+    "lucide-react": "^1.80.0",
+    "mailparser": "^3.15.0",
+    "mammoth": "^1.13.0",
+    "next": "16.4.6",
+    "pdfjs-dist": "6.5.438",
+    "radix-ui": "^1.8.1",
+    "react": "19.2.9",
+    "react-dom": "19.2.9",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^3.7.1",
+    "zustand": "^5.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/mailparser": "^3.9.0",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.3.2",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.4.6",
+    "prettier": "^3.10.1",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^4.3.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.12"
+  },
+  "packageManager": "pnpm@10.34.5"
+}
