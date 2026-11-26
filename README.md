@@ -18,7 +18,7 @@ Sherlock Timeline helps one investigator reconstruct a sequence of events from c
 
 Use Node.js 24, pnpm 10.34.5 and Docker Compose. Run the commands from the project root.
 
-1. Install dependencies and generate unique local credentials. Save the administrator password printed by the setup script. It writes a private `.env` and refuses to overwrite an existing one.
+1. Install dependencies and generate unique local credentials. Enter and save a unique administrator password when prompted. Input is hidden. It writes a private `.env` and refuses to overwrite an existing one.
 
    ```sh
    pnpm install --frozen-lockfile
