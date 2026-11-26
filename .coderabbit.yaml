@@ -24,3 +24,5 @@ reviews:
       instructions: "Check upload and download authorisation, case ownership, size limits and storage failures. Preserve original attachment bytes and metadata. Flag paths that expose private files or leave database records pointing to missing evidence."
     - path: "{prisma/**,src/lib/backup.ts,.github/workflows/**,Dockerfile,docker-compose.yml,vercel.json}"
       instructions: "Preserve migration ordering, backup recoverability, secret scanning and existing deployment checks. Flag destructive schema changes and accidental use of live data in builds or tests."
+    - path: "docs/{case-export-format,evidence-storage}.md"
+      instructions: "Cross-check documented import compatibility and case-scoped ID remapping against the importer and its tests. Verify storage guidance keeps ZIP evidence opaque, downloads authenticated and post-commit backup failures distinct from failed uploads. Use synthetic recovery examples."
