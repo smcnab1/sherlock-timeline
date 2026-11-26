@@ -74,3 +74,7 @@ GitHub Actions checks the full Git history for secrets, installs the locked depe
 - [Evidence storage and recovery](docs/evidence-storage.md)
 - [Case export format](docs/case-export-format.md)
 - [Third-party software and notices](THIRD_PARTY_NOTICES.md)
+
+## Licence
+
+Original project code is available under the [MIT licence](LICENSE). Bundled fonts, icons and dependencies retain their [own notices](THIRD_PARTY_NOTICES.md).
