@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-GB
+tone_instructions: "Prioritise correctness, regressions, privacy and concrete failure scenarios. Avoid cosmetic preferences and speculative refactors. Keep findings concise."
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_instructions: "Summarise the practical impact in up to three short bullets."
+  estimate_code_review_effort: false
+  assess_linked_issues: false
+  related_issues: false
+  collapse_walkthrough: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+    auto_incremental_review: true
+  path_instructions:
+    - path: "src/**"
+      instructions: "Check event ordering across time zones, date-only and uncertain dates, and ties. Preserve recorded precision and provenance through edits, imports and exports. Flag cross-case reads or writes, broken links and partial updates. Use synthetic fixtures for regressions and keep personal case data, database contents and private attachments out of reviews."
+    - path: "src/{components,app}/**/*.tsx"
+      instructions: "Check keyboard access, accessible names, focus restoration and non-visual access to timeline events and attachment actions."
+    - path: "src/{app,lib}/**"
+      instructions: "Check upload and download authorisation, case ownership, size limits and storage failures. Preserve original attachment bytes and metadata. Flag paths that expose private files or leave database records pointing to missing evidence."
+    - path: "{prisma/**,src/lib/backup.ts,.github/workflows/**,Dockerfile,docker-compose.yml,vercel.json}"
+      instructions: "Preserve migration ordering, backup recoverability, secret scanning and existing deployment checks. Flag destructive schema changes and accidental use of live data in builds or tests."
+    - path: "docs/{case-export-format,evidence-storage}.md"
+      instructions: "Cross-check documented import compatibility and case-scoped ID remapping against the importer and its tests. Verify storage guidance keeps ZIP evidence opaque, downloads authenticated and post-commit backup failures distinct from failed uploads. Use synthetic recovery examples."
